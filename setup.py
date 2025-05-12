@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="machine_translation ge to en",
+    name="machine_translation",
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
