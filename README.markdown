@@ -22,14 +22,24 @@ from machine_translation import get_data_loaders, Encoder, Decoder, Seq2Seq, tra
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import pickle
 
+# Set device to GPU if available, otherwise CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-train_loader, val_loader, _, src_vocab, trg_vocab = get_data_loaders()
 
+# Define batch size and number of epochs
+batch_size = 128
+num_epochs = 15  # You can adjust this value
+
+# Get data loaders and vocabularies
+train_loader, val_loader, _, src_vocab, trg_vocab = get_data_loaders(batch_size=batch_size)
+
+# Initialize encoder, decoder, and Seq2Seq model
 enc = Encoder(len(src_vocab), 256, 512, 2, 0.5, device)
 dec = Decoder(len(trg_vocab), 256, 512, 2, 0.5)
 model = Seq2Seq(enc, dec, device).to(device)
 
+# Define optimizer and loss function
 optimizer = optim.Adam(model.parameters())
 criterion = nn.CrossEntropyLoss(ignore_index=trg_vocab["<PAD>"])
 
@@ -52,17 +62,29 @@ for epoch in range(1, num_epochs+1):
         )
         print(f"  → Saved best model (epoch {epoch}, val_loss {val_loss:.3f})")
 
+# Save vocabularies for later use
+with open("src_vocab.pkl", "wb") as f:
+    pickle.dump(src_vocab, f)
+with open("trg_vocab.pkl", "wb") as f:
+    pickle.dump(trg_vocab, f)
 ```
 
 ### Translating a Sentence
 ```python
-from machine_translation import translate_sentence, get_vocabularies, Encoder, Decoder, Seq2Seq
+from machine_translation import translate_sentence, Encoder, Decoder, Seq2Seq
 import torch
+import pickle
 
-# Reconstruct vocab sizes
-src_vocab, trg_vocab = get_vocabularies()  # your helper to load/save vocabs
-
+# Set device to GPU if available, otherwise CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Load vocabularies
+with open("src_vocab.pkl", "rb") as f:
+    src_vocab = pickle.load(f)
+with open("trg_vocab.pkl", "rb") as f:
+    trg_vocab = pickle.load(f)
+
+# Initialize model with the same architecture as during training
 enc = Encoder(len(src_vocab), 256, 512, 2, 0.5, device)
 dec = Decoder(len(trg_vocab), 256, 512, 2, 0.5)
 model = Seq2Seq(enc, dec, device).to(device)
@@ -72,9 +94,10 @@ checkpoint = torch.load("machine_translation_best.pt", map_location=device)
 model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
 
+# Translate a sentence
 sentence = "Ein kleines Mädchen spielt im Park."
 translation = translate_sentence(sentence, src_vocab, trg_vocab, model, device)
-print(" ".join(translation))
+print("Translated sentence:", " ".join(translation))
 ```
 
 ## License
