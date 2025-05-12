@@ -6,7 +6,7 @@ A German-to-English machine translation system built from scratch using PyTorch.
 
 1. Install the package via pip:
    ```bash
-   pip install machine_translation
+   pip install machine-translation
    ```
 2. Install spaCy models:
    ```bash
