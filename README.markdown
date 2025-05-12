@@ -18,7 +18,7 @@ A German-to-English machine translation system built from scratch using PyTorch.
 
 ### Training a Model
 ```python
-from machine_translation import get_data_loaders, Encoder, Decoder, Seq2Seq, train
+from machine_translation import get_data_loaders, Encoder, Decoder, Seq2Seq, train, evaluate
 import torch
 import torch.nn as nn
 import torch.optim as optim
